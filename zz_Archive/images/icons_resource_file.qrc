@@ -1,0 +1,24 @@
+<RCC>
+  <qresource prefix="button_icons">
+    <file>button_icons/Accounts.ico</file>
+    <file>button_icons/Calendar.ico</file>
+    <file>button_icons/devloper.ico</file>
+    <file>button_icons/hamburger.ico</file>
+    <file>button_icons/Home.ico</file>
+    <file>button_icons/Import.ico</file>
+    <file>button_icons/lock.ico</file>
+    <file>button_icons/lock_tagged.ico</file>
+    <file>button_icons/pencil.ico</file>
+    <file>button_icons/plus.ico</file>
+    <file>button_icons/refresh.ico</file>
+    <file>button_icons/save.ico</file>
+    <file>button_icons/Settings.ico</file>
+    <file>button_icons/tags.ico</file>
+    <file>button_icons/unlock.ico</file>
+  </qresource>
+  <qresource prefix="Other_Icons">
+    <file>Devloper_Logo.png</file>
+    <file>logo.ico</file>
+    <file>logo.jpg</file>
+  </qresource>
+</RCC>
