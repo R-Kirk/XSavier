@@ -1,0 +1,7 @@
+EXE/
+build/
+__pycache__/
+.venv/
+*.zip
+Test Data/
+Test Files/
