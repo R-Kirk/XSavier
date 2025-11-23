@@ -1,4 +1,4 @@
-from msilib.schema import tables
+#from msilib.schema import tables
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtCore import QEvent
