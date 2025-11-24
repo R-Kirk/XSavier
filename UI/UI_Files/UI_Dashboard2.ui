@@ -205,6 +205,50 @@ QLabel{
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton_Bills">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial Black</family>
+            <pointsize>12</pointsize>
+            <weight>10</weight>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Bills</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../images/icons_resource_file.qrc">
+            <normaloff>:/button_icons/button_icons/tags.ico</normaloff>:/button_icons/button_icons/tags.ico</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <property name="autoRepeat">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
+
 ##### --- #####
 
 ##### --- Import GUI Files to use --- #####.......................................................
@@ -40,6 +41,8 @@ from UI.GUI_Files.GUI_EditKeywordRule import Ui_Form as UI_EditKeywordRule
 from UI.GUI_Files.GUI_Tags_Convert import Ui_Form as UI_TagsConvert
 from UI.GUI_Files.GUI_Analytics import Ui_Form as UI_Analytics
 from UI.GUI_Files.GUI_DeleteTag1 import Ui_Form as UI_DeleteTag1
+from UI.GUI_Files.GUI_Bills import Ui_Form as UI_Bills
+from UI.GUI_Files.GUI_BillsAdd import Ui_Form as UI_BillsAdd
 ##### --- #####
 
 ##### --- CUSTOM WIDGETS --- #####...............................................................
@@ -147,6 +150,7 @@ class Dashboard_Widget(qtw.QWidget):
         self.dashboard.commandLinkButton_HamBurger.setChecked(Toggled)
         self.dashboard.commandLinkButton_TagsbyYear.toggled.connect(self.update_dashboard_yearly_tags)
         self.dashboard.pushButton_Analytics.clicked.connect(lambda: show_Analytics(int(y)))
+        self.dashboard.pushButton_Bills.clicked.connect(show_Bills)
         ##### --- #####
 
         ##### --- disable buttons if Accounts aren't created yet --- #####
@@ -340,6 +344,165 @@ class Accounts_Widget(qtw.QWidget):
             col = 0
             row += 1
         ##### --- #####
+
+class Bills_Widget(qtw.QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bills = UI_Bills()
+        self.bills.setupUi(self)
+
+        ##### --- Buttons --- #####
+        self.bills.pushButton_Home.clicked.connect(lambda: show_dashboard("Auto"))
+        self.bills.pushButton_NewBill.clicked.connect(show_BillsAdd)
+        ##### --- #####
+        
+        ##### --- Edit QTableWidget --- ##### 
+        self.bills.tableWidget_Bills.setColumnCount(9)
+        self.bills.tableWidget_Bills.setHorizontalHeaderLabels(["ID", "Name", "Description", "Pay Freq." ,"Amount", "Yearly Amt", "Monthly Amt", "Weekly Amt", "Enabled"])
+        ##### --- #####
+
+
+        ##### --- Get Bills from DB --- #####
+        bills = db.get_bills() 
+        enabled_list = []
+        disabled_list = []
+        for bill in bills:
+            if bill[8] == "Enabled":
+                enabled_list.append(bill)
+            else:
+                disabled_list.append(bill)
+        enabled_list = sorted(enabled_list, key=lambda x: x[4], reverse = True)
+        disabled_list = sorted(disabled_list, key=lambda x: x[4], reverse = True)
+        bills = sorted(bills, key=lambda x: x[8], reverse=True)
+        ##### --- #####
+
+
+        ##### --- Set items in table --- #####
+        if bills != False:
+            row_count = len(bills)
+            self.bills.tableWidget_Bills.setRowCount(row_count)
+            row = 0
+            col = 0
+            for x in enabled_list:
+                for y in x:
+                    if col == 8:
+                        combo = ComboBillsEnable(self, f"{row}_{col}", y)
+                        self.bills.tableWidget_Bills.setCellWidget(row, col, combo)
+                    
+                    self.bills.tableWidget_Bills.setItem(row, col, qtw.QTableWidgetItem(str(y)))
+                    
+                    col += 1                  
+                col = 0
+                row += 1
+            for x in disabled_list:
+                for y in x:
+                    if col == 8:
+                        combo = ComboBillsEnable(self, f"{row}_{col}", y)
+                        self.bills.tableWidget_Bills.setCellWidget(row, col, combo)
+                    
+                    self.bills.tableWidget_Bills.setItem(row, col, qtw.QTableWidgetItem(str(y)))
+                    self.bills.tableWidget_Bills.item(int(row), int(col)).setBackground(QtGui.QColor("#9ba89f"))
+                    col += 1                  
+                col = 0
+                row += 1
+        ##### --- #####
+
+        ##### --- Set totals bar --- #####
+
+        if bills != False:
+            enabled_count = 0
+            yearly_total = 0
+            monthly_total = 0
+            weekly_total = 0
+            disabled_count = 0
+            disabled_yearly = 0
+            disabled_monthly = 0
+            disabled_weekly = 0
+
+            ## Column Designations ##
+            yearly_col = 5
+            monthly_col = 6
+            weekly_col = 7
+            enabled_col = 8
+            for bill in bills:
+                print(bill[0])
+                if bill[enabled_col] == "Enabled":
+                    enabled_count += 1
+                    yearly_total += float(bill[yearly_col])
+                    monthly_total += float(bill[monthly_col])
+                    weekly_total += float(bill[weekly_col])
+                else:
+                    disabled_count += 1
+                    disabled_yearly += float(bill[yearly_col])
+                    disabled_monthly += float(bill[monthly_col])
+                    disabled_weekly += float(bill[weekly_col])
+            
+
+            self.bills.label_enabled_count_2.setText(f"{round(enabled_count,2):,}")
+            self.bills.label_yearly_total_2.setText(f"$ {round(yearly_total,2):,}")
+            self.bills.label_monthly_total_2.setText(f"$ {round(monthly_total,2):,}")
+            self.bills.label_weekly_total_2.setText(f"$ {round(weekly_total,2):,}")
+            self.bills.label_disabled_count_2.setText(f"{round(disabled_count,2):,}")
+            self.bills.label_disabled_yearly_2.setText(f"$ {round(disabled_yearly,2):,}")
+            self.bills.label_disabled_monthly_2.setText(f"$ {round(disabled_monthly,2):,}")
+            self.bills.label_disabled_weekly_2.setText(f"$ {round(disabled_weekly,2):,}")
+
+        
+        ### --- Fit to column
+        self.bills.tableWidget_Bills.resizeColumnsToContents() 
+        for row in range(len(bills)):
+            
+            for col in range(len(bills[0])):
+                if col != 8:
+                    item = self.bills.tableWidget_Bills.item(row, col)
+                    item.setFlags(item.flags() & ~qtc.Qt.ItemIsEditable)
+                    
+
+
+
+        ##### --- #####
+        
+class BillsAdd_Widget(qtw.QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bills_add = UI_BillsAdd()
+        self.bills_add.setupUi(self)
+
+        ##### --- Buttons --- #####
+        self.bills_add.pushButton_Cancel.clicked.connect(show_Bills)
+        self.bills_add.pushButton_Save.clicked.connect(self.save_bill)
+        ##### --- #####
+
+        ##### --- Set Combo Box --- #####
+        items = ["Monthly", "Yearly", "Weekly"]
+        self.bills_add.comboBox_PayFreq.addItems(items)
+        self.bills_add.comboBox_PayFreq.setCurrentIndex(0)
+        ##### --- #####
+        
+
+    def save_bill(self):
+        name = self.bills_add.lineEdit_BillName.text()
+        description = self.bills_add.lineEdit_Description.text()
+        pay_freq = self.bills_add.comboBox_PayFreq.currentText()
+        amount = float(self.bills_add.lineEdit_Amount.text())
+        enabled = "Enabled"
+
+        if pay_freq == "Yearly":
+            yearly = round((amount),2)
+            monthly = round((amount/12),2)
+            weekly = round((amount / 52),2)
+
+        elif pay_freq == "Monthly":
+            yearly = round((amount * 12),2)
+            monthly = round((amount),2)
+            weekly = round(((amount * 12)/52),2)
+        else:
+            yearly = round((amount * 52),2)
+            monthly = round(((amount * 52)/12),2)
+            weekly = round((amount),2)
+        
+        if db.add_bill(name, description, pay_freq, amount, yearly, monthly, weekly, enabled) == True:
+            show_Bills()
 
 class NewAccount_Widget(qtw.QWidget):
     def __init__(self, *args, **kwargs):
@@ -2239,6 +2402,27 @@ class ComboTag5(QComboBox):
             self.table_widget.setItem(row, col+3, year_item)
             self.table_widget.setItem(row, col+4, date_item)
 
+class ComboBillsEnable(QComboBox):
+    def __init__(self, parent, name, value):
+        super().__init__(parent)
+        self.objectName = name
+
+        self.addItems(["Enabled", "Disabled"])
+
+        self.setCurrentText(value)
+
+        self.table_widget = self.parentWidget().findChild(qtw.QTableWidget, "tableWidget_Bills")
+
+        self.location = self.objectName.split("_")
+
+        self.currentIndexChanged.connect(self.save_setting)
+    
+    def save_setting(self):
+        bill_id = int(self.table_widget.item(int(self.location[0]),0).text())
+        db.update_bill(bill_id, self.currentText())
+        show_Bills()
+        
+
 class CalendarDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -2333,6 +2517,13 @@ def show_dashboard(month_choice, year = y, side_bar = True):
     
 def show_accounts():
     widget = Accounts_Widget()
+    window.setCentralWidget(widget)
+
+def show_Bills():
+    widget = Bills_Widget()
+    window.setCentralWidget(widget)
+def show_BillsAdd():
+    widget = BillsAdd_Widget()
     window.setCentralWidget(widget)
 
 def show_NewAccount():

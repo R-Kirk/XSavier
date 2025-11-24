@@ -112,8 +112,18 @@ class database():
             Tag_1 text,
             Tag_2 text)""")
         
-
-        self.c.execute("ALTER TABLE Application_Settings ADD COLUMN BarChartShowZeros text")
+        self.c.execute("""CREATE TABLE IF NOT EXISTS Bills (
+            id integer PRIMARY KEY,
+            Name text,  
+            Description text,
+            Pay Freq text,
+            Amount Real,
+            Yearly Real,
+            Monthly Real,
+            Weekly Real,
+            Enabled text)""")
+    
+        #self.c.execute("ALTER TABLE Application_Settings ADD COLUMN BarChartShowZeros text")
         self.conn.commit()
         
         self.communicate("Created Tables")
@@ -314,6 +324,17 @@ class database():
             Tags1 = self.c.fetchall()
             return Tags1
     
+    def get_bills(self):
+        self.c.execute("""SELECT MAX(id) FROM Bills""")
+        max_id = self.c.fetchone()[0]
+
+        if max_id == None:
+            return False
+        else:
+            self.c.execute("""SELECT * FROM Bills """)
+            Bills = self.c.fetchall()
+            return Bills
+    
     def get_tag2s(self):
         self.c.execute("SELECT max(id) FROM Expense_Tags2")
         max_id = self.c.fetchone()[0]
@@ -371,6 +392,25 @@ class database():
         else:
             self.c.execute("INSERT INTO Expense_Tags1 VALUES (?, ?, ?, ?, ?, ?)", [max_id+1, tag_name, budget, color, visible, calc])
             self.conn.commit()
+    
+    def add_bill(self, name, description, pay_freq, amount, yearly, monthly, weekly, enabled):
+        self.c.execute("SELECT MAX(id) from Bills")
+        max_id = self.c.fetchone()[0]
+
+        try:
+            if max_id == None:
+                max_id = 1
+                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id, name, description, pay_freq, amount, yearly, monthly, weekly, enabled])
+                self.conn.commit()
+                return True
+            else:
+                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id+1, name, description, pay_freq, amount, yearly, monthly, weekly, enabled])
+                self.conn.commit()
+                return True
+        except Exception as e:
+            print(e)
+            return e
+        
 
     def add_tag2(self, tag1_name, tag2_name):
         self.c.execute("SELECT MAX(id) from Expense_Tags2")
@@ -462,6 +502,17 @@ class database():
 
         self.conn.commit()
         self.communicate(f"Converted {count} Tags")
+
+    def update_bill(self, id, value):
+        try:
+            self.c.execute("UPDATE Bills SET Enabled = ? WHERE id = ?", [value, id])
+            self.conn.commit()
+
+            self.communicate(f"Updated Bill ID: {id}")
+            return True
+        except:
+            self.communicate(f"Failed to Bill ID: {id}")
+            return False
 
     def update_import_notes(self, text):
         try:
