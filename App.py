@@ -357,35 +357,38 @@ class Bills_Widget(qtw.QWidget):
         ##### --- #####
         
         ##### --- Edit QTableWidget --- ##### 
-        self.bills.tableWidget_Bills.setColumnCount(9)
-        self.bills.tableWidget_Bills.setHorizontalHeaderLabels(["ID", "Name", "Description", "Pay Freq." ,"Amount", "Yearly Amt", "Monthly Amt", "Weekly Amt", "Enabled"])
+        self.bills.tableWidget_Bills.setColumnCount(10)
+        self.bills.tableWidget_Bills.setHorizontalHeaderLabels(["ID", "Name", "Description", "Pay Freq." ,"Amount", "Yearly Amt", "Monthly Amt", "Weekly Amt", "Account", "Enabled"])
         ##### --- #####
 
 
         ##### --- Get Bills from DB --- #####
         bills = db.get_bills() 
-        enabled_list = []
-        disabled_list = []
-        for bill in bills:
-            if bill[8] == "Enabled":
-                enabled_list.append(bill)
-            else:
-                disabled_list.append(bill)
-        enabled_list = sorted(enabled_list, key=lambda x: x[4], reverse = True)
-        disabled_list = sorted(disabled_list, key=lambda x: x[4], reverse = True)
-        bills = sorted(bills, key=lambda x: x[8], reverse=True)
+        
+        
         ##### --- #####
 
 
         ##### --- Set items in table --- #####
         if bills != False:
+            enabled_list = []
+            disabled_list = []
+            for bill in bills:
+                if bill[9] == "Enabled":
+                    enabled_list.append(bill)
+                else:
+                    disabled_list.append(bill)
+            enabled_list = sorted(enabled_list, key=lambda x: x[4], reverse = True)
+            disabled_list = sorted(disabled_list, key=lambda x: x[4], reverse = True)
+            bills = sorted(bills, key=lambda x: x[8], reverse=True)
+
             row_count = len(bills)
             self.bills.tableWidget_Bills.setRowCount(row_count)
             row = 0
             col = 0
             for x in enabled_list:
                 for y in x:
-                    if col == 8:
+                    if col == 9:
                         combo = ComboBillsEnable(self, f"{row}_{col}", y)
                         self.bills.tableWidget_Bills.setCellWidget(row, col, combo)
                     
@@ -396,7 +399,7 @@ class Bills_Widget(qtw.QWidget):
                 row += 1
             for x in disabled_list:
                 for y in x:
-                    if col == 8:
+                    if col == 9:
                         combo = ComboBillsEnable(self, f"{row}_{col}", y)
                         self.bills.tableWidget_Bills.setCellWidget(row, col, combo)
                     
@@ -423,9 +426,9 @@ class Bills_Widget(qtw.QWidget):
             yearly_col = 5
             monthly_col = 6
             weekly_col = 7
-            enabled_col = 8
+            enabled_col = 9
             for bill in bills:
-                print(bill[0])
+                
                 if bill[enabled_col] == "Enabled":
                     enabled_count += 1
                     yearly_total += float(bill[yearly_col])
@@ -448,14 +451,14 @@ class Bills_Widget(qtw.QWidget):
             self.bills.label_disabled_weekly_2.setText(f"$ {round(disabled_weekly,2):,}")
 
         
-        ### --- Fit to column
-        self.bills.tableWidget_Bills.resizeColumnsToContents() 
-        for row in range(len(bills)):
-            
-            for col in range(len(bills[0])):
-                if col != 8:
-                    item = self.bills.tableWidget_Bills.item(row, col)
-                    item.setFlags(item.flags() & ~qtc.Qt.ItemIsEditable)
+            ### --- Fit to column
+            self.bills.tableWidget_Bills.resizeColumnsToContents() 
+            for row in range(len(bills)):
+                
+                for col in range(len(bills[0])):
+                    if col != 8:
+                        item = self.bills.tableWidget_Bills.item(row, col)
+                        item.setFlags(item.flags() & ~qtc.Qt.ItemIsEditable)
                     
 
 
@@ -478,6 +481,16 @@ class BillsAdd_Widget(qtw.QWidget):
         self.bills_add.comboBox_PayFreq.addItems(items)
         self.bills_add.comboBox_PayFreq.setCurrentIndex(0)
         ##### --- #####
+
+        ##### --- Set Accounts --- #####
+        accounts = db.accounts
+        self.bills_add.comboBox_Account.addItem("--")
+        for account in accounts:
+            self.bills_add.comboBox_Account.addItem(account[1])
+
+        ##### --- #####
+
+
         
 
     def save_bill(self):
@@ -485,6 +498,7 @@ class BillsAdd_Widget(qtw.QWidget):
         description = self.bills_add.lineEdit_Description.text()
         pay_freq = self.bills_add.comboBox_PayFreq.currentText()
         amount = float(self.bills_add.lineEdit_Amount.text())
+        account = self.bills_add.comboBox_Account.currentText()
         enabled = "Enabled"
 
         if pay_freq == "Yearly":
@@ -501,7 +515,7 @@ class BillsAdd_Widget(qtw.QWidget):
             monthly = round(((amount * 52)/12),2)
             weekly = round((amount),2)
         
-        if db.add_bill(name, description, pay_freq, amount, yearly, monthly, weekly, enabled) == True:
+        if db.add_bill(name, description, pay_freq, amount, yearly, monthly, weekly, account, enabled) == True:
             show_Bills()
 
 class NewAccount_Widget(qtw.QWidget):

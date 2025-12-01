@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1143</width>
-    <height>853</height>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,21 +29,8 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QLineEdit" name="lineEdit_Amount"/>
-     </item>
-     <item row="5" column="0" colspan="4">
-      <widget class="QPushButton" name="pushButton_Cancel">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
+     <item row="2" column="2">
+      <widget class="QComboBox" name="comboBox_PayFreq"/>
      </item>
      <item row="1" column="1">
       <widget class="QLabel" name="label_Description">
@@ -55,38 +42,6 @@
        </property>
        <property name="text">
         <string>Description:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QLineEdit" name="lineEdit_Description"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QComboBox" name="comboBox_PayFreq"/>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_BillName">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Bill Name:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0" colspan="4">
-      <widget class="QPushButton" name="pushButton_Save">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Save Bill</string>
        </property>
       </widget>
      </item>
@@ -105,6 +60,67 @@
         <string>Amount:</string>
        </property>
       </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_Account">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Account:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" colspan="4">
+      <widget class="QPushButton" name="pushButton_Cancel">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="4">
+      <widget class="QPushButton" name="pushButton_Save">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Save Bill</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_BillName">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Bill Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="lineEdit_Amount"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="lineEdit_Description"/>
+     </item>
+     <item row="4" column="2">
+      <widget class="QComboBox" name="comboBox_Account"/>
      </item>
     </layout>
    </item>

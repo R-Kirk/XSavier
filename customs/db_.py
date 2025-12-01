@@ -8,7 +8,7 @@ y_ = today_.strftime("%Y")
 
 
 #Define Application Version
-version = "2.0"
+version = "2.9.1"
 
 class database():
     def __init__(self, *args, **kwargs):
@@ -95,6 +95,7 @@ class database():
             Application_Version text)""")
         
         self.c.execute("""SELECT MAX(id) From Application_Settings""")
+
         max_id = self.c.fetchone()[0]
         if max_id == None:
             self.c.execute("INSERT INTO Application_Settings VALUES (?, ?, ?, ?)", [1, "True", version, "True"])
@@ -102,7 +103,7 @@ class database():
             self.c.execute("SELECT * From Application_Settings WHERE id = (?)", [1])
             settings = self.c.fetchall()[0]
             if settings[2] != version:
-                self.c.execute("INSERT OR REPLACE INTO Application_Settings VALUES (?, ?, ?)", [settings[0], settings[1],version, settings[3]])
+                self.c.execute("INSERT OR REPLACE INTO Application_Settings VALUES (?, ?, ?, ?)", [settings[0], settings[1],version, settings[3]])
                 self.communicate("Updated Application Version")
 
         ###### --- Insert new table for keyword tagging definitions here --- ###
@@ -121,6 +122,7 @@ class database():
             Yearly Real,
             Monthly Real,
             Weekly Real,
+            Account text,
             Enabled text)""")
     
         #self.c.execute("ALTER TABLE Application_Settings ADD COLUMN BarChartShowZeros text")
@@ -283,11 +285,6 @@ class database():
 
         return sorted_years
 
-
-
-
-        
-
         ##### --- #####
 
     def get_tags_to_convert(self, tag1, tag2):
@@ -393,18 +390,18 @@ class database():
             self.c.execute("INSERT INTO Expense_Tags1 VALUES (?, ?, ?, ?, ?, ?)", [max_id+1, tag_name, budget, color, visible, calc])
             self.conn.commit()
     
-    def add_bill(self, name, description, pay_freq, amount, yearly, monthly, weekly, enabled):
+    def add_bill(self, name, description, pay_freq, amount, yearly, monthly, weekly, account, enabled):
         self.c.execute("SELECT MAX(id) from Bills")
         max_id = self.c.fetchone()[0]
 
         try:
             if max_id == None:
                 max_id = 1
-                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id, name, description, pay_freq, amount, yearly, monthly, weekly, enabled])
+                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id, name, description, pay_freq, amount, yearly, monthly, weekly, account, enabled])
                 self.conn.commit()
                 return True
             else:
-                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id+1, name, description, pay_freq, amount, yearly, monthly, weekly, enabled])
+                self.c.execute("INSERT INTO Bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [max_id+1, name, description, pay_freq, amount, yearly, monthly, weekly, account, enabled])
                 self.conn.commit()
                 return True
         except Exception as e:
