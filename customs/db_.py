@@ -166,7 +166,7 @@ class database():
                 expenses = self.c.fetchall()
                 return expenses
             
-        elif mode == "Month-Year":
+        elif mode in ["Month-Year", "Month-Year-To-From"]:
             expenses = []
             self.c.execute("""SELECT MAX(id) From Accounts""")
             max_id = self.c.fetchone()[0]
@@ -193,15 +193,19 @@ class database():
 
             ##### --- FILTER: NO FILTER --- #####           
             else:
-                self.c.execute("""SELECT * From Expenses where MonthCalc = ? and YearCalc = ?""", [month_1, year_1])
-                expenses = self.c.fetchall()
-
-                ##### -- GET OVERRIDDEN DATES for this month
-                self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [month_1, year_1, month_1, year_1])
-                expenses = self.c.fetchall()
+                if mode == "Month-Year":
+                    self.c.execute("""SELECT * From Expenses where MonthCalc = ? and YearCalc = ?""", [month_1, year_1])
+                    expenses = self.c.fetchall()
+                    ##### -- GET OVERRIDDEN DATES for this month
+                    self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [month_1, year_1, month_1, year_1])
+                    expenses = self.c.fetchall()
+                elif mode == "Month-Year-To-From":
+                    ##### -- GET OVERRIDDEN DATES for this month
+                    if year_1 == year_2:
+                        for m in range(int(month_1), int(month_2)):
+                            self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [str(m), year_1, str(m), year_1])
+                            expenses += self.c.fetchall()
             ##### --- #####
-                
-            
             if expenses == []:
                 return False
             else:
@@ -221,7 +225,6 @@ class database():
                     return expenses        
 
     def get_expense_years(self):
-
         ##### --- CalcYears --- #####
         self.c.execute("SELECT YearCalc FROM Expenses")
         years = self.c.fetchall()
@@ -302,8 +305,12 @@ class database():
         if max_id == None:
             return False
         else:
-            self.c.execute("""SELECT * From Expenses where YearCalc = ? OR OvrYear = ?""", [year, year])
+            #self.c.execute("""SELECT * From Expenses where YearCalc = ? OR OvrYear = ?""", [year, year])
+
+            self.c.execute("""SELECT * From Expenses where YearCalc = ? AND DateOverrideBool != ?""", [year, "Enabled"])
             expenses = self.c.fetchall()
+            self.c.execute("""SELECT * From Expenses where OvrYear = ? AND DateOverrideBool = ?""", [year, "Enabled"])
+            expenses += self.c.fetchall()
 
             if expenses == []:
                 return False

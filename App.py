@@ -8,6 +8,7 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QMessageBox,  QComboBox, QColorDialog, QDialog
 from datetime import date as date
 from datetime import datetime
@@ -798,6 +799,11 @@ class TagManager_Widget(qtw.QWidget):
         self.tagmanager.commandLinkButton_LockTagged.clicked.connect(self.lock_tagged)
         ##### --- #####
 
+        ##### --- Set Dates From/To for Filtering to have 4 digit years --- #####
+        self.tagmanager.dateEdit_From.setDisplayFormat("M/dd/yyyy")
+        self.tagmanager.dateEdit_To.setDisplayFormat("M/dd/yyyy")
+        ##### --- #####
+
         ##### --- Set up Status Bar for Table --- #####
 
         self.tagmanager.tableWidget_Expenses.itemSelectionChanged.connect(self.update_status_bar)
@@ -808,7 +814,7 @@ class TagManager_Widget(qtw.QWidget):
         self.tagmanager.tableWidget_Expenses.setColumnCount(25)
         self.tagmanager.tableWidget_Expenses.setHorizontalHeaderLabels(["id", "Account", "TransMonth", "TransDay", "TransYear", "TransDate","PostedMonth", "PostedDay", "PostedYear", "PostedDate","OvrBoolean","OvrMonth", "OvrDay", "OvrYear", "OvrDate","CalcMonth", "CalcDay", "CalcYear", "CalcDate", "Description", "Amount", "Tag 1", "Tag 2", "Lock", "Note"])
         #Edit Combo Boxes
-        self.tagmanager.comboBox_Filter.addItems(["Month-Year","Untagged", "Show All"])
+        self.tagmanager.comboBox_Filter.addItems(["Month-Year","Untagged", "Show All", "Month-Year-To-From"])
         tag1s = []
         for tag in db.get_tag1s():
             tag1s.append(tag[1])
@@ -835,6 +841,8 @@ class TagManager_Widget(qtw.QWidget):
         self.tagmanager.dateEdit_From.setDate(from_date)
         self.tagmanager.dateEdit_To.setDate(to_date)
 
+        
+
     def refresh_data(self):
         #https://www.youtube.com/watch?v=8RUxvqt2tAk&t=336s  - Tiered Combo boxes
         mode = self.tagmanager.comboBox_Filter.currentText()
@@ -842,7 +850,7 @@ class TagManager_Widget(qtw.QWidget):
         account_selection = self.tagmanager.comboBox_Accounts.currentText()
         if mode == "Show All": 
             data = db.get_expenses(mode,1,1,1,1, tag_selection, account_selection)
-        elif mode == "Month-Year": 
+        elif mode == "Month-Year" or mode == "Month-Year-To-From": 
             from_date = self.tagmanager.dateEdit_From.text()
             from_date = from_date.split("/")
             to_date = self.tagmanager.dateEdit_To.text()
@@ -852,7 +860,10 @@ class TagManager_Widget(qtw.QWidget):
             year_1 = from_date[2]
             month_2 = to_date[0]
             year_2 = to_date[2]
-            data = db.get_expenses("Month-Year", month_1, year_1, month_2, year_2, tag_selection, account_selection)
+            
+           
+            data = db.get_expenses(mode, month_1, year_1, month_2, year_2, tag_selection, account_selection)
+            
             
 
         elif mode == "Untagged":
@@ -2436,7 +2447,6 @@ class ComboBillsEnable(QComboBox):
         db.update_bill(bill_id, self.currentText())
         show_Bills()
         
-
 class CalendarDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -2648,7 +2658,28 @@ if __name__ == "__main__":
     if start_up: 
         proceed = StartUp()
 
+    ### --- Added for macOS integration --- ###
+    import os
+    os.environ["QT_MAC_WANTS_LAYER"] = "1"
+    ### --- ###
+
+
     app = qtw.QApplication([])
+
+    ### --- Added for macOs --- ###
+    app.setStyle("Fusion")
+    palette = app.palette()
+    palette.setColor(palette.Window, QColor(240, 240, 240))
+    palette.setColor(palette.WindowText, qtc.Qt.black)
+    palette.setColor(palette.Base, qtc.Qt.white)
+    palette.setColor(palette.AlternateBase, QColor(240, 240, 240))
+    palette.setColor(palette.Text, qtc.Qt.black)
+    palette.setColor(palette.Button, QColor(240, 240, 240))
+    palette.setColor(palette.ButtonText, qtc.Qt.black)
+    app.setPalette(palette)
+    ### --- ###
+
+
     window = MainWindow()
     window.show()
 

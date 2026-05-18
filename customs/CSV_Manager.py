@@ -299,32 +299,33 @@ def verify_dates(date_data, date_type = "Posted"):
             dates_verify = False 
             date_error_text = date_error_text + str(date_error_line_no) + ", "
         else:
-            try:
-                date_object = datetime.strptime(i, '%m/%d/%Y')
-            except:
-                date_object = datetime.strptime(i, '%Y-%m-%d')
+            parsed = False
+            for fmt in ('%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'):
+                try:
+                    date_object = datetime.strptime(i, fmt)
+                    parsed = True
+                    break
+                except ValueError:
+                    continue
+            if not parsed:
+                raise ValueError(f"Unrecognized date format: {i!r}")
 
             date_data_1.append(str(date_object.strftime("%m/%d/%Y")))
-            try:
-                month_dummy = int(i[:i.find('/')])
-                month_dummy = str(month_dummy)
-            except:
-                month_dummy = int(date_object.month)
-                month_dummy = str(month_dummy)
 
+            try:
+                month_dummy = str(int(i[:i.find('/')]))
+            except:
+                month_dummy = str(int(date_object.month))
             months.append(month_dummy)
-            length = len(i)
 
             try:
-                year_dummy = int(i[length-4:])
-                year_dummy = str(year_dummy)
+                year_dummy = str(int(i[len(i)-4:]))
             except:
-                year_dummy = int(date_object.year)
-                year_dummy = str(year_dummy)
+                year_dummy = str(int(date_object.year))
             years.append(year_dummy)
-            
+
             days.append(str(int(date_object.day)))
-            date_error_line_no +=1
+            date_error_line_no += 1
 
     if date_type != "Trans":
         mode = "same_month_check"
