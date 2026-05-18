@@ -8,7 +8,7 @@ y_ = today_.strftime("%Y")
 
 
 #Define Application Version
-version = "2.9.1"
+version = "4.0"
 
 class database():
     def __init__(self, *args, **kwargs):
