@@ -805,8 +805,10 @@ class TagManager_Widget(qtw.QWidget):
         ##### --- #####
 
         ##### --- Set up Status Bar for Table --- #####
-
         self.tagmanager.tableWidget_Expenses.itemSelectionChanged.connect(self.update_status_bar)
+
+        self.tagmanager.tableWidget_Expenses.setContextMenuPolicy(qtc.Qt.CustomContextMenu)
+        self.tagmanager.tableWidget_Expenses.customContextMenuRequested.connect(self.on_table_context_menu)
 
         ##### --- #####
 
@@ -841,7 +843,53 @@ class TagManager_Widget(qtw.QWidget):
         self.tagmanager.dateEdit_From.setDate(from_date)
         self.tagmanager.dateEdit_To.setDate(to_date)
 
-        
+    def on_table_context_menu(self, pos):
+        table = self.tagmanager.tableWidget_Expenses
+        if not table.selectedRanges():
+            return  # nothing selected, no menu
+
+        menu = qtw.QMenu(self)
+        fill_action = menu.addAction("Fill Tags")
+
+        # map to global coords so the menu pops at the cursor
+        action = menu.exec_(table.viewport().mapToGlobal(pos))
+
+        if action == fill_action:
+            self.fill_selected_tags()
+
+    def fill_selected_tags(self):
+        table = self.tagmanager.tableWidget_Expenses
+        tags1 = db.get_tag1s()
+        if tags1 == False:
+            alert = AlertMessage(self, "No Tags", "No Tag 1s are set up",
+                                 "Please create tags before filling rows.", False)
+            alert.exec_()
+            return
+        tags2 = db.get_tag2s()
+
+        dialog = FillTagsDialog(self, tags1, tags2)
+        if dialog.exec_() != QDialog.Accepted:
+            return
+        tag1, tag2 = dialog.selections()
+
+        col_tag1 = 21
+        col_tag2 = 22
+        rows = set()
+        for selected_range in table.selectedRanges():
+            for row in range(selected_range.topRow(), selected_range.bottomRow() + 1):
+                rows.add(row)
+
+        for row in sorted(rows):
+            combo_tag1 = table.cellWidget(row, col_tag1)
+            if not isinstance(combo_tag1, QComboBox):
+                continue  # tags not set up / hidden on this row
+            # Setting Tag 1 fires getCombo_row, which repopulates the Tag 2 combo
+            combo_tag1.setCurrentText(tag1)
+            combo_tag2 = table.cellWidget(row, col_tag2)
+            if isinstance(combo_tag2, QComboBox):
+                combo_tag2.setCurrentText(tag2)
+            print(f"Row {row}: Tag1={tag1!r}, Tag2={tag2!r}")
+
 
     def refresh_data(self):
         #https://www.youtube.com/watch?v=8RUxvqt2tAk&t=336s  - Tiered Combo boxes
@@ -2426,6 +2474,45 @@ class ComboTag5(QComboBox):
             self.table_widget.setItem(row, col+2, day_item)
             self.table_widget.setItem(row, col+3, year_item)
             self.table_widget.setItem(row, col+4, date_item)
+
+class FillTagsDialog(qtw.QDialog):
+    def __init__(self, parent, tags1, tags2):
+        super().__init__(parent)
+        self.setWindowTitle("Fill Tags")
+        self.tags2 = tags2
+
+        self.combo_tag1 = QComboBox()
+        self.combo_tag2 = QComboBox()
+
+        # Visible Tag 1s only (mirrors the table's combos)
+        for tag in tags1:
+            if tag[4] == "True":
+                self.combo_tag1.addItem(tag[1])
+
+        # Tag 2 options depend on the selected Tag 1
+        self.combo_tag1.currentTextChanged.connect(self.load_tag2s)
+        self.load_tag2s(self.combo_tag1.currentText())
+
+        buttons = qtw.QDialogButtonBox(qtw.QDialogButtonBox.Ok | qtw.QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        form = qtw.QFormLayout(self)
+        form.addRow("Tag 1:", self.combo_tag1)
+        form.addRow("Tag 2:", self.combo_tag2)
+        form.addRow(buttons)
+
+    def load_tag2s(self, tag1_name):
+        self.combo_tag2.clear()
+        if self.tags2 != False:
+            for tag2 in self.tags2:
+                if tag2[1] == tag1_name:
+                    self.combo_tag2.addItem(tag2[2])
+        # "--" assigns the row to the Tag 1 only
+        self.combo_tag2.addItem("--")
+
+    def selections(self):
+        return self.combo_tag1.currentText(), self.combo_tag2.currentText()
 
 class ComboBillsEnable(QComboBox):
     def __init__(self, parent, name, value):
