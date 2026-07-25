@@ -1,0 +1,7 @@
+ID,Datetime,Type,Status,Note,From,To,Amount (total),Amount (tip),Amount (tax),Amount (fee),Tax Rate,Tax Exempt,Funding Source,Destination,Beginning Balance,Ending Balance,Statement Period Venmo Fees,Terminal Location,Year to Date Venmo Fees,Disclaimer
+4.52561E+18,2026-02-05T03:39:40,Payment,Complete,Haue Valley -#2,Sarah Cavanaugh,Ryan Kirkendall,1747.52,,0,,0,,,Venmo balance,,,,Venmo,,
+4.52562E+18,2026-02-05T03:58:36,Charge,Complete,Rent,Sarah Cavanaugh,Ryan Kirkendall,-895.00,,0,,0,,Venmo balance,,,,,Venmo,,
+4.52589E+18,2026-02-05T12:59:12,Standard Transfer,Issued,Transfer to bank,,,-3983.49,,,,,,,EASTEX FEDERAL CREDIT UNION *7042,,,,Venmo,,
+4.52635E+18,2026-02-06T04:05:20,Payment,Complete,Anthony Vacation payment,Anthony Kirkendall,Ryan Kirkendall,75.00,,0,,0,,,Venmo balance,,,,Venmo,,
+4.5285E+18,2026-02-09T03:29:41,Payment,Complete,NFL Pickem - 2nd Place Split,Ryan Kirkendall,Logan Armontrout,-22.80,,0,,0,,Venmo balance,,,,,Venmo,,
+4.54188E+18,2026-02-27T14:15:14,Payment,Complete,Piad Bo,Ryan Kirkendall,Bo Brooks,-25.00,,0,,0,,Venmo balance,,,,,Venmo,,

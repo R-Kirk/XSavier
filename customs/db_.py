@@ -141,6 +141,7 @@ class database():
             self.accounts = self.c.fetchall() 
     
     def get_expenses(self, mode, month_1, year_1, month_2, year_2, tag1 = "*", account = "*"):
+        
         if mode == "Show All":
             self.c.execute("""SELECT MAX(id) From Accounts""")
             max_id = self.c.fetchone()[0]
@@ -166,7 +167,7 @@ class database():
                 expenses = self.c.fetchall()
                 return expenses
             
-        elif mode in ["Month-Year", "Month-Year-To-From"]:
+        elif mode in ["Month-Year"]:
             expenses = []
             self.c.execute("""SELECT MAX(id) From Accounts""")
             max_id = self.c.fetchone()[0]
@@ -193,23 +194,79 @@ class database():
 
             ##### --- FILTER: NO FILTER --- #####           
             else:
-                if mode == "Month-Year":
-                    self.c.execute("""SELECT * From Expenses where MonthCalc = ? and YearCalc = ?""", [month_1, year_1])
-                    expenses = self.c.fetchall()
-                    ##### -- GET OVERRIDDEN DATES for this month
-                    self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [month_1, year_1, month_1, year_1])
-                    expenses = self.c.fetchall()
-                elif mode == "Month-Year-To-From":
-                    ##### -- GET OVERRIDDEN DATES for this month
-                    if year_1 == year_2:
-                        for m in range(int(month_1), int(month_2)):
-                            self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [str(m), year_1, str(m), year_1])
-                            expenses += self.c.fetchall()
+                self.c.execute("""SELECT * From Expenses where MonthCalc = ? and YearCalc = ?""", [month_1, year_1])
+                expenses = self.c.fetchall()
+                ##### -- GET OVERRIDDEN DATES for this month
+                self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? OR OvrMonth = ? and OvrYear = ?""", [month_1, year_1, month_1, year_1])
+                expenses = self.c.fetchall()
             ##### --- #####
             if expenses == []:
                 return False
             else:
                 return expenses
+            
+        elif mode == "Month-Year-To-From":
+            print("Here")
+            date_bool_true = "Enabled"
+            date_bool_false = "--"
+
+            expenses = []
+            self.c.execute("""SELECT MAX(id) From Accounts""")
+            max_id = self.c.fetchone()[0]
+            if max_id == None:
+                return False
+            
+            ##### --- FILTER: Tag 1 & Account --- #####
+            elif tag1 != "*" and account != "*":
+                if year_1 == year_2:
+                    for m in range(int(month_1), int(month_2)):
+                        self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? AND DateOverrideBool = ? AND Tag1 = ? AND Account = ?""", [str(m), year_1, date_bool_false, tag1, account])
+                        expenses += self.c.fetchall()
+                        self.c.execute(""" SELECT * From Expenses WHERE OvrMonth = ? and OvrYear = ? AND DateOverrideBool = ? AND Tag1 = ? AND Account = ?""", [str(m), year_1, date_bool_true, tag1, account])
+                        expenses += self.c.fetchall()
+            ##### --- #####
+                
+             ##### --- FILTER: Tag 1 ONLY --- #####
+            elif tag1 != "*" and account == "*":
+                if year_1 == year_2:
+                    for m in range(int(month_1), int(month_2)):
+                        self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? AND DateOverrideBool = ? AND Tag1 = ?""", [str(m), year_1, date_bool_false, tag1])
+                        expenses += self.c.fetchall()
+                        self.c.execute(""" SELECT * From Expenses WHERE OvrMonth = ? and OvrYear = ? AND DateOverrideBool = ? AND Tag1 = ?""", [str(m), year_1, date_bool_true, tag1])
+                        expenses += self.c.fetchall()
+            ##### --- #####
+
+            ##### --- FILTER: Account ONLY --- #####
+            elif tag1 == "*" and account != "*":
+                if year_1 == year_2:
+                    for m in range(int(month_1), int(month_2)):
+                        self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? AND DateOverrideBool = ? AND Account = ?""", [str(m), year_1, date_bool_false, account])
+                        expenses += self.c.fetchall()
+                        self.c.execute(""" SELECT * From Expenses WHERE OvrMonth = ? and OvrYear = ? AND DateOverrideBool = ? AND Account = ?""", [str(m), year_1, date_bool_true, account])
+                        expenses += self.c.fetchall()
+            ##### --- #####
+
+            ##### --- FILTER: NO FILTER --- #####           
+            else:
+                ##### -- GET OVERRIDDEN DATES for this month
+                
+                if year_1 == year_2:
+                   
+                    for m in range(int(month_1), int(month_2)+1):
+                   
+                        self.c.execute(""" SELECT * From Expenses WHERE MonthCalc = ? and YearCalc = ? AND DateOverrideBool = ?""", [str(m), year_1, date_bool_false])
+                        expenses += self.c.fetchall()
+                        self.c.execute(""" SELECT * From Expenses WHERE OvrMonth = ? and OvrYear = ? AND DateOverrideBool = ?""", [str(m), year_1, date_bool_true])
+                        expenses += self.c.fetchall()
+                        print("Here_1")
+                        
+            ##### --- #####
+            if expenses == []:
+                return False
+            else:
+                return expenses
+            
+
                 
         elif mode == "Untagged":
             self.c.execute("""SELECT MAX(id) From Accounts""")
@@ -415,7 +472,6 @@ class database():
             print(e)
             return e
         
-
     def add_tag2(self, tag1_name, tag2_name):
         self.c.execute("SELECT MAX(id) from Expense_Tags2")
         max_id = self.c.fetchone()[0]

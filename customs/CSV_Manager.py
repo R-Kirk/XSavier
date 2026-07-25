@@ -300,7 +300,7 @@ def verify_dates(date_data, date_type = "Posted"):
             date_error_text = date_error_text + str(date_error_line_no) + ", "
         else:
             parsed = False
-            for fmt in ('%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'):
+            for fmt in ('%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S'):
                 try:
                     date_object = datetime.strptime(i, fmt)
                     parsed = True
